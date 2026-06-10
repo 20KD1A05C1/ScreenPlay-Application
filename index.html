@@ -45,6 +45,7 @@ body[data-theme="dark"] {
   --shadow-lg:    0 8px 32px rgba(0,0,0,0.6);
   --scrollbar-bg: #1e1e24;
   --scrollbar-thumb: #3a3a48;
+  --ai-glow: rgba(92,124,250,0.15);
 }
 body[data-theme="light"] {
   --bg-app:       #f0f0f4;
@@ -69,6 +70,7 @@ body[data-theme="light"] {
   --shadow-lg:    0 8px 32px rgba(0,0,0,0.15);
   --scrollbar-bg: #f5f5f8;
   --scrollbar-thumb: #c0c0cc;
+  --ai-glow: rgba(58,91,217,0.1);
 }
 
 /* ============================================================
@@ -156,6 +158,7 @@ body {
 .topbar-btn:hover { background: var(--bg-hover); border-color: var(--border-light); }
 .topbar-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 .topbar-btn.primary:hover { background: var(--accent-hover); }
+.topbar-btn.active { background: var(--bg-active); border-color: var(--accent); color: var(--accent); }
 .topbar-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 /* ============================================================
@@ -180,11 +183,12 @@ body {
   border-bottom: 1px solid var(--border);
   padding: 8px 8px 0;
   gap: 2px;
+  flex-wrap: wrap;
 }
 .sidebar-tab {
   flex: 1;
-  padding: 7px 6px;
-  font-size: 11px;
+  padding: 7px 4px;
+  font-size: 10px;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -192,9 +196,10 @@ body {
   color: var(--text-muted);
   transition: var(--transition);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   border: 1px solid transparent;
   border-bottom: none;
+  white-space: nowrap;
 }
 .sidebar-tab:hover { color: var(--text-primary); }
 .sidebar-tab.active {
@@ -266,7 +271,6 @@ body {
   gap: 8px;
   transition: var(--transition);
   margin-bottom: 2px;
-  group: true;
 }
 .project-item:hover { background: var(--bg-hover); }
 .project-item.active { background: var(--bg-active); }
@@ -308,6 +312,64 @@ body {
 .notes-textarea::placeholder { color: var(--text-muted); }
 
 /* ============================================================
+   CHARACTER & LOCATION TRACKER
+   ============================================================ */
+.tracker-section { padding: 8px 10px; }
+.tracker-section h4 {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tracker-badge {
+  background: var(--bg-active);
+  color: var(--text-accent);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tracker-list { display: flex; flex-direction: column; gap: 4px; }
+.tracker-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 9px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.tracker-item:hover { border-color: var(--accent); background: var(--bg-hover); }
+.tracker-item-name { font-size: 12px; font-weight: 600; flex: 1; }
+.tracker-item-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-panel);
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+.tracker-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px 10px; }
+
+/* ============================================================
+   VERSION HISTORY
+   ============================================================ */
+.history-list { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.history-item {
+  padding: 9px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.history-item:hover { border-color: var(--accent); background: var(--bg-hover); }
+.history-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.history-item-label { font-size: 12px; font-weight: 600; }
+.history-item-time { font-size: 10px; color: var(--text-muted); }
+.history-item-meta { font-size: 11px; color: var(--text-secondary); }
+.history-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px 10px; }
+.history-actions { padding: 8px 10px; display: flex; gap: 6px; }
+
+/* ============================================================
    MAIN EDITOR AREA
    ============================================================ */
 #editor-area {
@@ -316,6 +378,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-editor);
+  position: relative;
 }
 
 /* Format Bar */
@@ -328,7 +391,9 @@ body {
   padding: 0 16px;
   gap: 4px;
   flex-shrink: 0;
+  transition: opacity var(--transition);
 }
+body.focus-mode #format-bar { opacity: 0; pointer-events: none; }
 .fmt-btn {
   padding: 5px 10px;
   border-radius: var(--radius);
@@ -368,6 +433,19 @@ body {
   font-family: var(--font-ui);
 }
 #search-input:focus { outline: none; border-color: var(--accent); }
+#replace-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 5px 10px;
+  font-family: var(--font-ui);
+  display: none;
+}
+#replace-input.visible { display: block; }
+#replace-input:focus { outline: none; border-color: var(--accent); }
 .search-info { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 80px; }
 
 /* Page Container */
@@ -377,6 +455,25 @@ body {
   padding: 32px 20px;
   display: flex;
   justify-content: center;
+  transition: background var(--transition);
+}
+
+/* Focus Mode */
+body.focus-mode #page-container {
+  background: var(--bg-page);
+  padding: 60px 20px;
+}
+body.focus-mode #screenplay-page {
+  box-shadow: none;
+}
+body.focus-mode #topbar { opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+body.focus-mode:hover #topbar,
+body.focus-mode:hover #format-bar { opacity: 1; pointer-events: all; }
+body.focus-mode #format-bar { pointer-events: none; }
+
+/* Typewriter mode — keeps cursor centered */
+body.typewriter-mode #page-container {
+  scroll-behavior: smooth;
 }
 
 /* Screenplay Page */
@@ -404,7 +501,13 @@ body {
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;
+  transition: opacity 0.2s;
 }
+
+/* Typewriter focus dimming */
+body.typewriter-mode .script-element { opacity: 0.4; }
+body.typewriter-mode .script-element:focus,
+body.typewriter-mode .script-element.typewriter-active { opacity: 1; }
 
 /* Scene Heading */
 .script-element.scene-heading {
@@ -413,11 +516,6 @@ body {
   margin-top: 24px;
   margin-bottom: 12px;
   color: var(--text-primary);
-}
-.script-element.scene-heading::before {
-  content: '';
-  display: block;
-  height: 0;
 }
 
 /* Action */
@@ -459,6 +557,17 @@ body {
   text-align: right;
   margin-top: 24px;
   margin-bottom: 12px;
+}
+
+/* AI-generated element glow */
+.script-element.ai-generated {
+  background: var(--ai-glow);
+  border-radius: 3px;
+  animation: aiGlow 2s ease-out forwards;
+}
+@keyframes aiGlow {
+  0% { background: var(--ai-glow); }
+  100% { background: transparent; }
 }
 
 /* Highlight search matches */
@@ -523,6 +632,150 @@ body {
 }
 .title-page-author:focus { border-bottom-color: var(--border); }
 .title-page-author:empty::before { content: 'Author Name'; color: var(--text-muted); }
+
+/* ============================================================
+   AI ASSISTANT PANEL
+   ============================================================ */
+#ai-panel {
+  position: fixed;
+  right: 0; top: 52px; bottom: 0;
+  width: 340px;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: var(--shadow-lg);
+}
+#ai-panel.visible { transform: translateX(0); }
+.ai-panel-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.ai-panel-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-spark { font-size: 16px; }
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ai-msg {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 95%;
+}
+.ai-msg.user {
+  background: var(--accent);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+.ai-msg.assistant {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  white-space: pre-wrap;
+}
+.ai-msg.thinking {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.ai-insert-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  transition: var(--transition);
+}
+.ai-insert-btn:hover { background: var(--accent); color: #fff; }
+.ai-quick-btns {
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ai-quick-btn {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.ai-quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ai-input-row {
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#ai-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 8px 10px;
+  resize: none;
+  line-height: 1.4;
+  max-height: 100px;
+}
+#ai-input:focus { outline: none; border-color: var(--accent); }
+#ai-input::placeholder { color: var(--text-muted); }
+.ai-send-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: var(--transition);
+  align-self: flex-end;
+}
+.ai-send-btn:hover { background: var(--accent-hover); }
+.ai-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-send-btn svg { width: 16px; height: 16px; }
 
 /* ============================================================
    MODALS
@@ -591,6 +844,22 @@ body {
 .export-option-icon { font-size: 24px; }
 .export-option-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .export-option-info p { font-size: 12px; color: var(--text-muted); }
+
+/* Version restore modal */
+.version-preview {
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
 
 /* Toast */
 #toast {
@@ -686,6 +955,29 @@ body {
   align-self: flex-end;
 }
 .notes-save-btn:hover { background: var(--accent); color: #fff; }
+
+/* Keyboard shortcut hint */
+.kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--bg-active);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
 </style>
 </head>
 <body data-theme="dark">
@@ -715,7 +1007,7 @@ body {
       </div>
     </div>
   </div>
-  <input class="topbar-title" id="screenplay-title" value="Untitled Screenplay" 
+  <input class="topbar-title" id="screenplay-title" value="Untitled Screenplay"
          onchange="updateTitle(this.value)" onblur="updateTitle(this.value)" spellcheck="false">
   <span id="autosave-indicator">Saved</span>
   <div class="topbar-sep"></div>
@@ -729,12 +1021,24 @@ body {
     <svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.099zm-5.242 1.406a5.5 5.5 0 110-11 5.5 5.5 0 010 11z"/></svg>
     Search
   </button>
+  <button class="topbar-btn" id="focus-btn" onclick="toggleFocusMode()" title="Focus Mode (F11)">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h3.5a.75.75 0 010 1.5H2.5v2.75a.75.75 0 01-1.5 0V1.75A.75.75 0 011.75 1zm9 0h3.5c.414 0 .75.336.75.75v3.5a.75.75 0 01-1.5 0V2.5h-2.75a.75.75 0 010-1.5zM1 10.75a.75.75 0 011.5 0V13.5h2.75a.75.75 0 010 1.5H1.75A.75.75 0 011 14.25v-3.5zm13.25 2.75H11.5a.75.75 0 010-1.5h2.75v-2.75a.75.75 0 011.5 0v3.5c0 .414-.336.75-.75.75h-.75z"/></svg>
+    Focus
+  </button>
+  <button class="topbar-btn" id="typewriter-btn" onclick="toggleTypewriterMode()" title="Typewriter Mode">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M.75 2a.75.75 0 000 1.5h14.5a.75.75 0 000-1.5H.75zM.75 5.5a.75.75 0 000 1.5h14.5a.75.75 0 000-1.5H.75zM0 9.75C0 9.336.336 9 .75 9h14.5a.75.75 0 010 1.5H.75A.75.75 0 010 9.75zM.75 12.5a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5H.75z"/></svg>
+    Typewriter
+  </button>
   <button class="topbar-btn" onclick="toggleTheme()">
     <svg viewBox="0 0 16 16" fill="currentColor" id="theme-icon"><path d="M6 .278a.768.768 0 01.08.858 7.208 7.208 0 00-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 01.81.316.733.733 0 01-.031.893A8.349 8.349 0 018.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 016 .278z"/></svg>
     Theme
   </button>
+  <button class="topbar-btn" id="ai-btn" onclick="toggleAIPanel()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM0 8a8 8 0 1116 0A8 8 0 010 8zm8-3.5a.5.5 0 01.5.5v3.05l1.7 1.7a.5.5 0 01-.7.7l-2-2A.5.5 0 017 8V5a.5.5 0 01.5-.5z"/></svg>
+    AI
+  </button>
   <button class="topbar-btn primary" onclick="openExport()">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 011 12.25v-2.5a.75.75 0 011.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25v-2.5a.75.75 0 011.5 0v2.5A1.75 1.75 0 0113.25 14H2.75zM7.25 7.689L5.030 5.469a.749.749 0 11 1.06-1.06L7 5.32V1.75a.75.75 0 011.5 0V5.32l.94-.94a.749.749 0 111.06 1.06L8.75 7.689A.747.747 0 018 7.97a.747.747 0 01-.75-.281z"/></svg>
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 011 12.25v-2.5a.75.75 0 011.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25v-2.5a.75.75 0 011.5 0v2.5A1.75 1.75 0 0113.25 14H2.75zM7.25 7.689L5.030 5.469a.749.749 0 111.06-1.06L7 5.32V1.75a.75.75 0 011.5 0V5.32l.94-.94a.749.749 0 111.06 1.06L8.75 7.689A.747.747 0 018 7.97a.747.747 0 01-.75-.281z"/></svg>
     Export
   </button>
   <button class="icon-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
@@ -750,6 +1054,8 @@ body {
     <div class="sidebar-tabs">
       <div class="sidebar-tab active" data-panel="scenes" onclick="switchSidebarTab('scenes')">Scenes</div>
       <div class="sidebar-tab" data-panel="projects" onclick="switchSidebarTab('projects')">Files</div>
+      <div class="sidebar-tab" data-panel="tracker" onclick="switchSidebarTab('tracker')">Cast</div>
+      <div class="sidebar-tab" data-panel="history" onclick="switchSidebarTab('history')">History</div>
       <div class="sidebar-tab" data-panel="notes" onclick="switchSidebarTab('notes')">Notes</div>
     </div>
 
@@ -771,6 +1077,35 @@ body {
         </button>
       </div>
       <div class="project-list" id="project-list"></div>
+    </div>
+
+    <!-- Cast & Location Tracker Panel -->
+    <div class="sidebar-panel" id="panel-tracker">
+      <div class="tracker-section">
+        <h4>Characters <span class="tracker-badge" id="char-count">0</span></h4>
+        <div class="tracker-list" id="char-list">
+          <div class="tracker-empty">Characters appear as you write dialogue.</div>
+        </div>
+      </div>
+      <div class="tracker-section" style="margin-top:8px">
+        <h4>Locations <span class="tracker-badge" id="loc-count">0</span></h4>
+        <div class="tracker-list" id="loc-list">
+          <div class="tracker-empty">Locations appear from scene headings.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version History Panel -->
+    <div class="sidebar-panel" id="panel-history">
+      <div class="projects-header">
+        <h3>Version History</h3>
+        <button class="icon-btn" onclick="saveVersion(true)" title="Save snapshot">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z"/></svg>
+        </button>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="history-empty">No snapshots yet. Click + to save one.</div>
+      </div>
     </div>
 
     <!-- Notes Panel -->
@@ -813,10 +1148,13 @@ body {
       <button class="fmt-btn" onclick="showTitlePage()" title="Toggle title page">Title Page</button>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search/Replace Bar -->
     <div id="search-bar">
       <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85a1.007 1.007 0 00-.115-.099zm-5.242 1.406a5.5 5.5 0 110-11 5.5 5.5 0 010 11z"/></svg>
-      <input type="text" id="search-input" placeholder="Search screenplay…" oninput="performSearch(this.value)" onkeydown="searchKeyNav(event)">
+      <input type="text" id="search-input" placeholder="Search…" oninput="performSearch(this.value)" onkeydown="searchKeyNav(event)">
+      <input type="text" id="replace-input" placeholder="Replace with…" onkeydown="if(event.key==='Enter')replaceNext()">
+      <button class="topbar-btn" style="padding:4px 8px;font-size:11px" onclick="replaceNext()">Replace</button>
+      <button class="topbar-btn" style="padding:4px 8px;font-size:11px" onclick="replaceAll()">All</button>
       <span class="search-info" id="search-info"></span>
       <button class="icon-btn" onclick="navigateSearch(-1)" title="Previous"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.427 9.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 9H4.604a.25.25 0 00-.177.427z" transform="rotate(180 8 8)"/></svg></button>
       <button class="icon-btn" onclick="navigateSearch(1)" title="Next"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.427 9.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 9H4.604a.25.25 0 00-.177.427z"/></svg></button>
@@ -832,10 +1170,36 @@ body {
           <div class="title-page-written">Written by</div>
           <div class="title-page-author" contenteditable="true" id="tp-author" spellcheck="false">Author Name</div>
         </div>
-
         <!-- Script Content -->
         <div id="script-content"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- AI ASSISTANT PANEL -->
+  <div id="ai-panel">
+    <div class="ai-panel-header">
+      <h3><span class="ai-spark">✦</span> AI Writing Assistant</h3>
+      <button class="icon-btn" onclick="toggleAIPanel()">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.749.749 0 111.06 1.06L9.06 8l3.22 3.22a.749.749 0 11-1.06 1.06L8 9.06l-3.22 3.22a.749.749 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/></svg>
+      </button>
+    </div>
+    <div class="ai-messages" id="ai-messages">
+      <div class="ai-msg assistant">Hi! I'm your AI writing assistant. I can help you write dialogue, action lines, suggest what happens next, or brainstorm ideas for your screenplay. Use the quick buttons below or ask me anything!</div>
+    </div>
+    <div class="ai-quick-btns">
+      <button class="ai-quick-btn" onclick="aiQuick('Continue the scene from where I left off')">Continue scene</button>
+      <button class="ai-quick-btn" onclick="aiQuick('Write dialogue for the current characters')">Write dialogue</button>
+      <button class="ai-quick-btn" onclick="aiQuick('Suggest what happens next in the story')">What happens next?</button>
+      <button class="ai-quick-btn" onclick="aiQuick('Write a dramatic action sequence')">Action sequence</button>
+      <button class="ai-quick-btn" onclick="aiQuick('Add a plot twist here')">Plot twist</button>
+      <button class="ai-quick-btn" onclick="aiQuick('Make this scene more tense')">Add tension</button>
+    </div>
+    <div class="ai-input-row">
+      <textarea id="ai-input" placeholder="Ask anything about your screenplay…" rows="2" onkeydown="aiInputKeydown(event)"></textarea>
+      <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.958 8L.318 1.104a.75.75 0 01.97-.928l13.5 6a.75.75 0 010 1.348l-13.5 6a.75.75 0 01-.97-.928L1.958 8zm.307-5.87L3.793 7.25h6.957a.75.75 0 010 1.5H3.793L2.265 13.77 13.237 8 2.265 2.13z"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -912,18 +1276,27 @@ body {
   </div>
 </div>
 
+<!-- Version Restore Modal -->
+<div class="modal-overlay" id="modal-restore">
+  <div class="modal">
+    <h2>Restore Version</h2>
+    <p id="restore-version-label" style="margin-bottom:10px"></p>
+    <div class="version-preview" id="version-preview-text"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-restore')">Cancel</button>
+      <button class="btn danger" onclick="confirmRestore()">Restore This Version</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
 <script>
-
 const SUPABASE_URL = "https://pnzbnoreypheaabhyinp.supabase.co";
 const SUPABASE_KEY = "sb_publishable_yFg-ZigjSCCB27qNjiWDxw_C-lUPgvB";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
 // ============================================================
 // STATE
 // ============================================================
@@ -941,6 +1314,10 @@ let autoSaveTimer = null;
 let cloudSyncTimer = null;
 let searchMatches = [];
 let searchIndex = 0;
+let focusModeActive = false;
+let typewriterModeActive = false;
+let pendingRestoreContent = null;
+let aiTypingTimer = null;
 
 // ============================================================
 // ELEMENT TYPES CONFIG
@@ -955,70 +1332,59 @@ const ELEMENT_TYPES = {
 };
 
 // ============================================================
-// INIT
+// CLOUD
 // ============================================================
 async function loadProjectsFromCloud() {
   try {
-    const { data, error } = await supabaseClient
-      .from("projects")
-      .select("*");
-
-    if (error) {
-      console.error(
-        "Supabase Error:",
-        error.message,
-        error.details,
-        error.hint
-        );
-      return;
-    }
-
+    const { data, error } = await supabaseClient.from("projects").select("*");
+    if (error) { console.error("Supabase Error:", error.message); return; }
     data.forEach(project => {
-    state.projects[project.id] = {
+      state.projects[project.id] = {
         id: project.id,
         title: project.title || "Untitled Screenplay",
         content: project.screenplay || [],
         notes: project.notes || {},
-
+        versions: project.versions || [],
         titlePage: project.title_page || {
-        title: (project.title || "UNTITLED SCREENPLAY").toUpperCase(),
-        author: "Author Name"
+          title: (project.title || "UNTITLED SCREENPLAY").toUpperCase(),
+          author: "Author Name"
         },
-
-        created: project.created_at
-        ? new Date(project.created_at).getTime()
-        : Date.now(),
-
-        modified: project.updated_at
-        ? new Date(project.updated_at).getTime()
-        : Date.now()
-    };
+        created: project.created_at ? new Date(project.created_at).getTime() : Date.now(),
+        modified: project.updated_at ? new Date(project.updated_at).getTime() : Date.now()
+      };
     });
-
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 async function syncCurrentProjectToCloud() {
-
   if (!state.currentProjectId) return;
-
   const project = state.projects[state.currentProjectId];
-
   if (!project) return;
-
   await saveProjectToCloud(project);
-
-  console.log("Cloud synced:", new Date().toLocaleTimeString());
 }
 
+async function saveProjectToCloud(project) {
+  try {
+    const { error } = await supabaseClient.from("projects").upsert({
+      id: project.id,
+      title: project.title,
+      screenplay: project.content,
+      notes: project.notes,
+      title_page: project.titlePage,
+      versions: project.versions || [],
+      updated_at: new Date().toISOString()
+    });
+    if (error) { console.error("Supabase Error:", error.message); showToast(error.message, "error"); return false; }
+    return true;
+  } catch (err) { console.error(err); return false; }
+}
+
+// ============================================================
+// INIT
+// ============================================================
 async function init() {
-
   loadState();
-
   await loadProjectsFromCloud();
-
   applyTheme(state.settings.theme);
   if (!state.currentProjectId || !state.projects[state.currentProjectId]) {
     createDefaultProject();
@@ -1035,21 +1401,18 @@ async function init() {
 function createDefaultProject() {
   const id = crypto.randomUUID();
   state.projects[id] = {
-    id,
-    title: 'Untitled Screenplay',
+    id, title: 'Untitled Screenplay',
     content: [],
     titlePage: { title: 'UNTITLED SCREENPLAY', author: 'Author Name' },
     notes: { story: '', character: '', research: '' },
-    created: Date.now(),
-    modified: Date.now()
+    versions: [],
+    created: Date.now(), modified: Date.now()
   };
   state.currentProjectId = id;
   loadProject(id);
   saveState();
   renderProjectList();
 }
-
-
 
 // ============================================================
 // PROJECT MANAGEMENT
@@ -1058,38 +1421,30 @@ function loadProject(id) {
   const project = state.projects[id];
   if (!project) return;
   state.currentProjectId = id;
-
-  // Set title
   document.getElementById('screenplay-title').value = project.title;
   document.getElementById('tp-title').textContent = project.titlePage?.title || project.title.toUpperCase();
   document.getElementById('tp-author').textContent = project.titlePage?.author || 'Author Name';
-
-  // Load notes
   document.getElementById('story-notes').value = project.notes?.story || '';
   document.getElementById('character-notes').value = project.notes?.character || '';
   document.getElementById('research-notes').value = project.notes?.research || '';
-
-  // Render script content
   renderScript(project.content);
   updateStats();
   updateSceneList();
+  updateTracker();
+  renderHistoryList();
 }
 
 function renderScript(content) {
   const container = document.getElementById('script-content');
   container.innerHTML = '';
-
   if (!content || content.length === 0) {
     addElement('scene-heading');
     return;
   }
-
-  content.forEach((el, i) => {
+  content.forEach(el => {
     const div = createElementDiv(el.type, el.text);
     container.appendChild(div);
   });
-
-  // Focus first element
   const first = container.querySelector('.script-element');
   if (first) { first.focus(); moveCursorToEnd(first); }
 }
@@ -1103,85 +1458,46 @@ function createElementDiv(type, text) {
   div.contentEditable = 'true';
   div.spellcheck = true;
   div.textContent = text || '';
-
   div.addEventListener('keydown', onElementKeyDown);
   div.addEventListener('input', onElementInput);
   div.addEventListener('focus', onElementFocus);
   div.addEventListener('paste', onElementPaste);
-
   return div;
 }
 
 function addElement(type, afterElement) {
   const container = document.getElementById('script-content');
   const div = createElementDiv(type, '');
-
   if (afterElement && afterElement.parentNode === container) {
     afterElement.after(div);
   } else {
     container.appendChild(div);
   }
-
   div.focus();
   return div;
-}
-
-
-async function saveProjectToCloud(project) {
-  try {
-    const { error } = await supabaseClient
-      .from("projects")
-      .upsert({
-        id: project.id,
-        title: project.title,
-        screenplay: project.content,
-        notes: project.notes,
-        title_page: project.titlePage,
-        updated_at: new Date().toISOString()
-      });
-
-    if (error) {
-        console.error(
-        "Supabase Error:",
-        error.message,
-        error.details,
-        error.hint
-        );
-      showToast(error.message, "error");
-      return false;
-    }
-    return true;
-
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
 }
 
 function saveCurrentProject() {
   if (!state.currentProjectId) return;
   const project = state.projects[state.currentProjectId];
   if (!project) return;
-
-  // Collect content
   const elements = document.querySelectorAll('#script-content .script-element');
   project.content = Array.from(elements).map(el => ({
     type: el.dataset.type,
     text: el.textContent
   }));
-
-  // Title page
   project.titlePage = {
     title: document.getElementById('tp-title').textContent,
     author: document.getElementById('tp-author').textContent
   };
-
   project.title = document.getElementById('screenplay-title').value || 'Untitled Screenplay';
   project.modified = Date.now();
-    saveState();
-    updateSceneList();
-    updateStats();
-    showAutosaveIndicator();
+  if (!project.versions) project.versions = [];
+  saveState();
+  updateSceneList();
+  updateStats();
+  updateTracker();
+  showAutosaveIndicator();
 }
 
 function scheduleAutoSave() {
@@ -1207,14 +1523,14 @@ function onElementKeyDown(e) {
     const nextType = ELEMENT_TYPES[type]?.tab || 'action';
     const newEl = addElement(nextType, el);
     newEl.focus();
+    if (typewriterModeActive) scrollToTypewriterCenter(newEl);
     scheduleAutoSave();
-    setTimeout(() => { updateSceneList(); updateStats(); }, 100);
+    setTimeout(() => { updateSceneList(); updateStats(); updateTracker(); }, 100);
     return;
   }
 
   if (e.key === 'Tab') {
     e.preventDefault();
-    // Cycle element types
     const types = Object.keys(ELEMENT_TYPES);
     const idx = types.indexOf(el.dataset.type);
     const nextIdx = e.shiftKey ? (idx - 1 + types.length) % types.length : (idx + 1) % types.length;
@@ -1233,43 +1549,43 @@ function onElementKeyDown(e) {
       prev.focus();
       moveCursorToEnd(prev);
       scheduleAutoSave();
-      setTimeout(() => { updateSceneList(); updateStats(); }, 100);
+      setTimeout(() => { updateSceneList(); updateStats(); updateTracker(); }, 100);
     }
     return;
-  }
-
-  // Slash commands
-  if (e.key === '/') {
-    // Let it type, detect on input
   }
 }
 
 function onElementInput(e) {
   const el = e.currentTarget;
   scheduleAutoSave();
-
   const text = el.textContent;
 
-  // Auto-detect scene heading
-  if (el.dataset.type === 'action') {
-    if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.)/i.test(text)) {
-      changeElementType(el, 'scene-heading');
-    }
+  // Bug fix: strip any HTML that may have been inserted (e.g. from search highlight lingering)
+  if (el.innerHTML !== el.textContent && !el.querySelector('mark')) {
+    const cur = el.textContent;
+    el.textContent = cur;
+    moveCursorToEnd(el);
   }
 
-  // Auto-detect transition
   if (el.dataset.type === 'action') {
-    if (/^(FADE IN:|FADE OUT:|CUT TO:|SMASH CUT:|DISSOLVE TO:)/i.test(text)) {
-      changeElementType(el, 'transition');
-    }
+    if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.)/i.test(text)) changeElementType(el, 'scene-heading');
+  }
+  if (el.dataset.type === 'action') {
+    if (/^(FADE IN:|FADE OUT:|CUT TO:|SMASH CUT:|DISSOLVE TO:)/i.test(text)) changeElementType(el, 'transition');
   }
 
-  setTimeout(() => { updateStats(); updateSceneList(); }, 50);
+  if (typewriterModeActive) scrollToTypewriterCenter(el);
+  setTimeout(() => { updateStats(); updateSceneList(); updateTracker(); }, 50);
 }
 
 function onElementFocus(e) {
   currentFocusedElement = e.currentTarget;
   updateFormatBar(e.currentTarget.dataset.type);
+  if (typewriterModeActive) {
+    document.querySelectorAll('.script-element').forEach(el => el.classList.remove('typewriter-active'));
+    e.currentTarget.classList.add('typewriter-active');
+    scrollToTypewriterCenter(e.currentTarget);
+  }
 }
 
 function onElementPaste(e) {
@@ -1306,16 +1622,14 @@ function updateSceneList() {
   const elements = document.querySelectorAll('#script-content .script-element.scene-heading');
   const container = document.getElementById('scene-list');
   container.innerHTML = '';
-
   if (elements.length === 0) {
     container.innerHTML = '<div style="padding:16px 10px;font-size:12px;color:var(--text-muted);text-align:center">No scenes yet.</div>';
     return;
   }
-
   elements.forEach((el, i) => {
     const item = document.createElement('div');
     item.className = 'scene-item';
-    item.innerHTML = `<span class="scene-num">${i + 1}</span><span class="scene-text">${el.textContent || 'Scene ' + (i+1)}</span>`;
+    item.innerHTML = `<span class="scene-num">${i + 1}</span><span class="scene-text">${escapeHtml(el.textContent) || 'Scene ' + (i+1)}</span>`;
     item.addEventListener('click', () => {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       el.focus();
@@ -1328,6 +1642,163 @@ function updateSceneList() {
 }
 
 // ============================================================
+// CHARACTER & LOCATION TRACKER
+// ============================================================
+function updateTracker() {
+  // Characters: from character elements
+  const charEls = document.querySelectorAll('#script-content .script-element.character');
+  const charMap = {};
+  charEls.forEach(el => {
+    const name = el.textContent.trim().toUpperCase();
+    if (name) charMap[name] = (charMap[name] || 0) + 1;
+  });
+
+  // Locations: from scene headings
+  const sceneEls = document.querySelectorAll('#script-content .script-element.scene-heading');
+  const locMap = {};
+  sceneEls.forEach(el => {
+    const raw = el.textContent.trim().toUpperCase();
+    // Extract location name after INT./EXT./INT-EXT.
+    const match = raw.match(/^(?:INT\.|EXT\.|INT\.\/EXT\.|I\/E\.)\s*(.+?)(?:\s*[-—]\s*(?:DAY|NIGHT|DAWN|DUSK|CONTINUOUS|LATER|MORNING|EVENING))?$/);
+    const loc = match ? match[1].trim() : raw;
+    if (loc) locMap[loc] = (locMap[loc] || 0) + 1;
+  });
+
+  // Render characters
+  const charList = document.getElementById('char-list');
+  document.getElementById('char-count').textContent = Object.keys(charMap).length;
+  charList.innerHTML = '';
+  if (Object.keys(charMap).length === 0) {
+    charList.innerHTML = '<div class="tracker-empty">Characters appear as you write dialogue.</div>';
+  } else {
+    Object.entries(charMap).sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+      const item = document.createElement('div');
+      item.className = 'tracker-item';
+      item.innerHTML = `<span class="tracker-item-name">${escapeHtml(name)}</span><span class="tracker-item-count">${count}×</span>`;
+      item.title = `Find all scenes with ${name}`;
+      item.addEventListener('click', () => {
+        switchSidebarTab('scenes');
+        // Open search for this character
+        const searchBar = document.getElementById('search-bar');
+        searchBar.classList.add('visible');
+        const inp = document.getElementById('search-input');
+        inp.value = name;
+        performSearch(name);
+      });
+      charList.appendChild(item);
+    });
+  }
+
+  // Render locations
+  const locList = document.getElementById('loc-list');
+  document.getElementById('loc-count').textContent = Object.keys(locMap).length;
+  locList.innerHTML = '';
+  if (Object.keys(locMap).length === 0) {
+    locList.innerHTML = '<div class="tracker-empty">Locations appear from scene headings.</div>';
+  } else {
+    Object.entries(locMap).sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+      const item = document.createElement('div');
+      item.className = 'tracker-item';
+      item.innerHTML = `<span class="tracker-item-name">${escapeHtml(name)}</span><span class="tracker-item-count">${count} scene${count>1?'s':''}</span>`;
+      item.addEventListener('click', () => {
+        const searchBar = document.getElementById('search-bar');
+        searchBar.classList.add('visible');
+        const inp = document.getElementById('search-input');
+        inp.value = name;
+        performSearch(name);
+      });
+      locList.appendChild(item);
+    });
+  }
+}
+
+// ============================================================
+// VERSION HISTORY
+// ============================================================
+function saveVersion(manual = false) {
+  if (!state.currentProjectId) return;
+  const project = state.projects[state.currentProjectId];
+  if (!project) return;
+
+  // Collect current content first
+  const elements = document.querySelectorAll('#script-content .script-element');
+  const content = Array.from(elements).map(el => ({ type: el.dataset.type, text: el.textContent }));
+  const wordCount = content.reduce((s, el) => s + (el.text.trim() ? el.text.trim().split(/\s+/).length : 0), 0);
+
+  if (!project.versions) project.versions = [];
+
+  // Auto-save: don't duplicate if content hasn't changed
+  if (!manual && project.versions.length > 0) {
+    const last = project.versions[project.versions.length - 1];
+    if (JSON.stringify(last.content) === JSON.stringify(content)) return;
+  }
+
+  // Keep max 20 versions
+  if (project.versions.length >= 20) project.versions.shift();
+
+  project.versions.push({
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    label: manual ? 'Manual snapshot' : 'Auto-save',
+    wordCount,
+    content: JSON.parse(JSON.stringify(content))
+  });
+
+  saveState();
+  renderHistoryList();
+  if (manual) showToast('Snapshot saved', 'success');
+}
+
+function renderHistoryList() {
+  const container = document.getElementById('history-list');
+  const project = state.projects[state.currentProjectId];
+  if (!project || !project.versions || project.versions.length === 0) {
+    container.innerHTML = '<div class="history-empty">No snapshots yet. Click + to save one.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  [...project.versions].reverse().forEach(ver => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const d = new Date(ver.timestamp);
+    const timeStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+                    d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    item.innerHTML = `
+      <div class="history-item-header">
+        <span class="history-item-label">${escapeHtml(ver.label)}</span>
+        <span class="history-item-time">${timeStr}</span>
+      </div>
+      <div class="history-item-meta">${ver.wordCount || 0} words · ${ver.content.length} elements</div>
+    `;
+    item.addEventListener('click', () => previewRestore(ver));
+    container.appendChild(item);
+  });
+}
+
+function previewRestore(ver) {
+  pendingRestoreContent = ver;
+  const d = new Date(ver.timestamp);
+  document.getElementById('restore-version-label').textContent =
+    `Saved ${d.toLocaleDateString()} at ${d.toLocaleTimeString()} — ${ver.wordCount} words`;
+  const preview = ver.content.slice(0, 20).map(el => `[${el.type.toUpperCase()}] ${el.text}`).join('\n');
+  document.getElementById('version-preview-text').textContent = preview + (ver.content.length > 20 ? '\n…' : '');
+  openModal('modal-restore');
+}
+
+function confirmRestore() {
+  if (!pendingRestoreContent) return;
+  saveVersion(false); // save current as auto-snapshot before restoring
+  renderScript(pendingRestoreContent.content);
+  saveCurrentProject();
+  closeModal('modal-restore');
+  showToast('Version restored', 'success');
+  pendingRestoreContent = null;
+}
+
+// Auto-version every 10 minutes
+setInterval(() => { if (state.currentProjectId) saveVersion(false); }, 10 * 60 * 1000);
+
+// ============================================================
 // STATS
 // ============================================================
 function updateStats() {
@@ -1335,29 +1806,31 @@ function updateStats() {
   const text = container.innerText || '';
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
   const scenes = container.querySelectorAll('.scene-heading').length;
-  // Industry standard: ~55 lines per page, 1 line per line of text
   const lines = text.split('\n').filter(l => l.trim()).length;
   const pages = Math.max(1, Math.ceil(lines / 55));
-
   document.getElementById('stat-words').textContent = words.toLocaleString();
   document.getElementById('stat-pages').textContent = pages;
   document.getElementById('stat-scenes').textContent = scenes;
 }
 
 // ============================================================
-// SEARCH
+// SEARCH & REPLACE (Bug fixed: proper text node restoration)
 // ============================================================
 function toggleSearch() {
   const bar = document.getElementById('search-bar');
   bar.classList.toggle('visible');
+  const replaceInput = document.getElementById('replace-input');
   if (bar.classList.contains('visible')) {
     document.getElementById('search-input').focus();
+    replaceInput.classList.add('visible');
   } else {
     clearSearch();
+    replaceInput.classList.remove('visible');
   }
 }
 
 function performSearch(query) {
+  // Bug fix: restore text content before re-highlighting to avoid HTML accumulation
   clearSearchHighlights();
   searchMatches = [];
   searchIndex = 0;
@@ -1370,11 +1843,14 @@ function performSearch(query) {
   const elements = document.querySelectorAll('#script-content .script-element');
   const regex = new RegExp(escapeRegex(query), 'gi');
 
+  let globalIdx = 0;
   elements.forEach(el => {
     const text = el.textContent;
     let match;
+    regex.lastIndex = 0;
     while ((match = regex.exec(text)) !== null) {
-      searchMatches.push({ element: el, index: match.index, length: match[0].length });
+      searchMatches.push({ element: el, index: match.index, length: match[0].length, globalIdx });
+      globalIdx++;
     }
   });
 
@@ -1386,20 +1862,23 @@ function performSearch(query) {
 function highlightMatches(query) {
   const elements = document.querySelectorAll('#script-content .script-element');
   const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-
   elements.forEach(el => {
     const text = el.textContent;
     if (regex.test(text)) {
       regex.lastIndex = 0;
-      el.innerHTML = el.textContent.replace(regex, '<mark class="search-highlight">$1</mark>');
+      // Use innerHTML carefully — store original text in data attr
+      el.dataset.originalText = text;
+      el.innerHTML = text.replace(regex, '<mark class="search-highlight">$1</mark>');
     }
   });
 }
 
 function clearSearchHighlights() {
+  // Bug fix: restore from data-original-text to avoid innerHTML corruption
   document.querySelectorAll('#script-content .script-element').forEach(el => {
-    if (el.querySelector('mark')) {
-      el.textContent = el.innerText;
+    if (el.querySelector('mark') || el.dataset.originalText) {
+      el.textContent = el.dataset.originalText || el.textContent;
+      delete el.dataset.originalText;
     }
   });
 }
@@ -1429,9 +1908,7 @@ function navigateToMatch(idx) {
 
 function updateSearchInfo() {
   const info = document.getElementById('search-info');
-  info.textContent = searchMatches.length > 0
-    ? `${searchIndex + 1} of ${searchMatches.length}`
-    : 'No results';
+  info.textContent = searchMatches.length > 0 ? `${searchIndex + 1}/${searchMatches.length}` : 'No results';
 }
 
 function searchKeyNav(e) {
@@ -1439,7 +1916,277 @@ function searchKeyNav(e) {
   if (e.key === 'Escape') toggleSearch();
 }
 
+function replaceNext() {
+  const query = document.getElementById('search-input').value.trim();
+  const replacement = document.getElementById('replace-input').value;
+  if (!query || searchMatches.length === 0) return;
+
+  clearSearchHighlights();
+  const elements = document.querySelectorAll('#script-content .script-element');
+  let replaced = false;
+  let count = 0;
+
+  elements.forEach(el => {
+    const text = el.textContent;
+    const regex = new RegExp(escapeRegex(query), 'gi');
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (count === searchIndex && !replaced) {
+        el.textContent = text.slice(0, match.index) + replacement + text.slice(match.index + match[0].length);
+        replaced = true;
+        break;
+      }
+      count++;
+    }
+  });
+
+  scheduleAutoSave();
+  performSearch(query);
+}
+
+function replaceAll() {
+  const query = document.getElementById('search-input').value.trim();
+  const replacement = document.getElementById('replace-input').value;
+  if (!query) return;
+
+  clearSearchHighlights();
+  let count = 0;
+  document.querySelectorAll('#script-content .script-element').forEach(el => {
+    const regex = new RegExp(escapeRegex(query), 'gi');
+    if (regex.test(el.textContent)) {
+      regex.lastIndex = 0;
+      const matches = el.textContent.match(regex) || [];
+      count += matches.length;
+      el.textContent = el.textContent.replace(regex, replacement);
+    }
+  });
+
+  scheduleAutoSave();
+  performSearch(document.getElementById('search-input').value);
+  showToast(`Replaced ${count} occurrence${count !== 1 ? 's' : ''}`, 'success');
+}
+
 function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ============================================================
+// FOCUS MODE
+// ============================================================
+function toggleFocusMode() {
+  focusModeActive = !focusModeActive;
+  document.body.classList.toggle('focus-mode', focusModeActive);
+  document.getElementById('focus-btn').classList.toggle('active', focusModeActive);
+  showToast(focusModeActive ? 'Focus mode on — hover top edge to show UI' : 'Focus mode off', '');
+}
+
+// ============================================================
+// TYPEWRITER MODE
+// ============================================================
+function toggleTypewriterMode() {
+  typewriterModeActive = !typewriterModeActive;
+  document.body.classList.toggle('typewriter-mode', typewriterModeActive);
+  document.getElementById('typewriter-btn').classList.toggle('active', typewriterModeActive);
+
+  if (typewriterModeActive && currentFocusedElement) {
+    scrollToTypewriterCenter(currentFocusedElement);
+    showToast('Typewriter mode on — active line stays centered', '');
+  } else {
+    showToast('Typewriter mode off', '');
+  }
+}
+
+function scrollToTypewriterCenter(el) {
+  const container = document.getElementById('page-container');
+  const containerRect = container.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  const targetScroll = container.scrollTop + elRect.top - containerRect.top - (containerRect.height / 2) + (elRect.height / 2);
+  container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+}
+
+// ============================================================
+// AI ASSISTANT
+// ============================================================
+let aiPanelOpen = false;
+
+function toggleAIPanel() {
+  aiPanelOpen = !aiPanelOpen;
+  document.getElementById('ai-panel').classList.toggle('visible', aiPanelOpen);
+  document.getElementById('ai-btn').classList.toggle('active', aiPanelOpen);
+  if (aiPanelOpen) setTimeout(() => document.getElementById('ai-input').focus(), 300);
+}
+
+function aiInputKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAIMessage();
+  }
+}
+
+function aiQuick(prompt) {
+  document.getElementById('ai-input').value = prompt;
+  sendAIMessage();
+}
+
+function getScriptContext() {
+  const elements = document.querySelectorAll('#script-content .script-element');
+  const lines = Array.from(elements).map(el => {
+    const type = el.dataset.type;
+    const text = el.textContent.trim();
+    if (!text) return null;
+    switch(type) {
+      case 'scene-heading': return text.toUpperCase();
+      case 'character':     return '\n' + text.toUpperCase();
+      case 'dialogue':      return text;
+      case 'parenthetical': return `(${text.replace(/^\(|\)$/g,'')})`;
+      case 'transition':    return '\n' + text.toUpperCase();
+      default:              return text;
+    }
+  }).filter(Boolean);
+
+  // Return last ~60 lines for context
+  const recentLines = lines.slice(-60).join('\n');
+  const title = document.getElementById('screenplay-title').value || 'Untitled';
+  return `Title: ${title}\n\n--- RECENT SCREENPLAY EXCERPT ---\n${recentLines}`;
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('ai-input');
+  const userMsg = input.value.trim();
+  if (!userMsg) return;
+  input.value = '';
+
+  const sendBtn = document.getElementById('ai-send-btn');
+  sendBtn.disabled = true;
+
+  appendAIMessage('user', userMsg);
+
+  const thinkingEl = appendAIMessage('thinking', '✦ Writing…');
+
+  const scriptContext = getScriptContext();
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `You are an expert screenplay writing assistant helping a writer develop their script. You understand professional screenplay format: scene headings (INT./EXT.), action lines, character names (uppercase), dialogue, parentheticals, and transitions.
+
+When writing screenplay content, format it clearly with each element on its own line. Label each element type like:
+[SCENE HEADING] INT. LOCATION - DAY
+[ACTION] Description here.
+[CHARACTER] NAME
+[DIALOGUE] What they say.
+[PARENTHETICAL] (beat)
+[TRANSITION] CUT TO:
+
+Keep suggestions authentic, dramatic, and true to professional screenplay style. Be concise but creative. The writer can insert your suggestions directly into their script.`,
+        messages: [
+          {
+            role: "user",
+            content: `Here is the screenplay I'm working on:\n\n${scriptContext}\n\n---\n\nMy request: ${userMsg}`
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || 'Sorry, I could not generate a response.';
+
+    thinkingEl.remove();
+    const msgEl = appendAIMessage('assistant', text);
+
+    // Add "Insert into script" button if response looks like screenplay content
+    if (text.includes('[') || text.includes('INT.') || text.includes('EXT.') || text.split('\n').length > 3) {
+      const insertBtn = document.createElement('button');
+      insertBtn.className = 'ai-insert-btn';
+      insertBtn.innerHTML = '↓ Insert into script';
+      insertBtn.addEventListener('click', () => insertAIContent(text));
+      msgEl.appendChild(insertBtn);
+    }
+
+  } catch (err) {
+    thinkingEl.textContent = 'Error: ' + err.message;
+    thinkingEl.className = 'ai-msg assistant';
+  }
+
+  sendBtn.disabled = false;
+  input.focus();
+}
+
+function appendAIMessage(role, text) {
+  const container = document.getElementById('ai-messages');
+  const msg = document.createElement('div');
+  msg.className = `ai-msg ${role}`;
+  msg.textContent = text;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+  return msg;
+}
+
+function insertAIContent(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  const container = document.getElementById('script-content');
+  let insertAfter = currentFocusedElement;
+
+  // If no focused element, insert at end
+  if (!insertAfter || !container.contains(insertAfter)) {
+    insertAfter = container.lastElementChild;
+  }
+
+  const elementTypeMap = {
+    'SCENE HEADING': 'scene-heading',
+    'ACTION': 'action',
+    'CHARACTER': 'character',
+    'DIALOGUE': 'dialogue',
+    'PARENTHETICAL': 'parenthetical',
+    'TRANSITION': 'transition'
+  };
+
+  let lastInserted = insertAfter;
+  let insertedCount = 0;
+
+  lines.forEach(line => {
+    const tagMatch = line.match(/^\[([A-Z\s]+)\]\s*(.*)/);
+    let type = 'action';
+    let content = line;
+
+    if (tagMatch) {
+      const tagKey = tagMatch[1].trim();
+      type = elementTypeMap[tagKey] || 'action';
+      content = tagMatch[2].trim();
+    } else if (/^(INT\.|EXT\.|INT\.\/EXT\.)/i.test(line)) {
+      type = 'scene-heading';
+    } else if (/^[A-Z][A-Z\s]+$/.test(line.trim()) && line.trim().length < 40) {
+      // Heuristic: all-caps short line = character name
+      type = 'character';
+    } else if (/^\(.*\)$/.test(line.trim())) {
+      type = 'parenthetical';
+    } else if (/^(CUT TO:|FADE|DISSOLVE)/i.test(line)) {
+      type = 'transition';
+    }
+
+    if (!content.trim()) return;
+
+    const div = createElementDiv(type, content);
+    div.classList.add('ai-generated');
+    if (lastInserted && container.contains(lastInserted)) {
+      lastInserted.after(div);
+    } else {
+      container.appendChild(div);
+    }
+    lastInserted = div;
+    insertedCount++;
+  });
+
+  if (insertedCount > 0) {
+    lastInserted.focus();
+    moveCursorToEnd(lastInserted);
+    scheduleAutoSave();
+    setTimeout(() => { updateSceneList(); updateStats(); updateTracker(); }, 100);
+    showToast(`Inserted ${insertedCount} line${insertedCount > 1 ? 's' : ''}`, 'success');
+  }
+}
 
 // ============================================================
 // PROJECT CRUD
@@ -1459,6 +2206,7 @@ function confirmNewProject() {
     content: [],
     titlePage: { title: name.toUpperCase(), author: 'Author Name' },
     notes: { story: '', character: '', research: '' },
+    versions: [],
     created: Date.now(), modified: Date.now()
   };
   state.currentProjectId = id;
@@ -1490,67 +2238,39 @@ async function confirmRename() {
   saveState();
   const success = await saveProjectToCloud(project);
   renderProjectList();
-
-  if (!success) {
-    showToast("Rename failed", "error");
-    return;
-  }
-
+  if (!success) { showToast("Rename failed", "error"); return; }
   closeModal('modal-rename');
   showToast("Renamed", "success");
-
 }
 
 function deleteProject() {
   closeAllDropdowns();
   const project = state.projects[state.currentProjectId];
   if (!project) return;
-  document.getElementById('delete-confirm-text').textContent =
-    `Delete "${project.title}"? This cannot be undone.`;
+  document.getElementById('delete-confirm-text').textContent = `Delete "${project.title}"? This cannot be undone.`;
   openModal('modal-delete');
 }
 
 async function confirmDelete() {
-
-  const success = await deleteProjectFromCloud(
-    state.currentProjectId
-  );
-
-  if (!success) {
-    showToast("Failed to delete from cloud", "error");
-    return;
-  }
-
+  const success = await deleteProjectFromCloud(state.currentProjectId);
+  if (!success) { showToast("Failed to delete from cloud", "error"); return; }
   delete state.projects[state.currentProjectId];
-
   const ids = Object.keys(state.projects);
-
   if (ids.length === 0) {
     createDefaultProject();
   } else {
     state.currentProjectId = ids[0];
     loadProject(ids[0]);
   }
-
   saveState();
   renderProjectList();
   closeModal('modal-delete');
-
   showToast('Deleted', 'success');
 }
 
 async function deleteProjectFromCloud(id) {
-
-  const { error } = await supabaseClient
-    .from("projects")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    return false;
-  }
-
+  const { error } = await supabaseClient.from("projects").delete().eq("id", id);
+  if (error) { console.error(error); return false; }
   return true;
 }
 
@@ -1567,7 +2287,6 @@ function renderProjectList() {
   const container = document.getElementById('project-list');
   container.innerHTML = '';
   const sorted = Object.values(state.projects).sort((a, b) => b.modified - a.modified);
-
   sorted.forEach(project => {
     const item = document.createElement('div');
     item.className = `project-item ${project.id === state.currentProjectId ? 'active' : ''}`;
@@ -1594,10 +2313,9 @@ function renderProjectList() {
 }
 
 function deleteProjectById(id) {
-  if (Object.keys(state.projects).length <= 1) {
-    showToast("Can't delete the only project", 'error'); return;
-  }
+  if (Object.keys(state.projects).length <= 1) { showToast("Can't delete the only project", 'error'); return; }
   delete state.projects[id];
+  deleteProjectFromCloud(id);
   if (state.currentProjectId === id) {
     const ids = Object.keys(state.projects);
     state.currentProjectId = ids[0];
@@ -1612,21 +2330,15 @@ function deleteProjectById(id) {
 // NOTES
 // ============================================================
 function saveNotes() {
-
   if (!state.currentProjectId) return;
-
   const project = state.projects[state.currentProjectId];
-
   project.notes = {
     story: document.getElementById('story-notes').value,
     character: document.getElementById('character-notes').value,
     research: document.getElementById('research-notes').value
   };
-
   saveState();
-
   saveProjectToCloud(project);
-
   showToast('Notes saved', 'success');
 }
 
@@ -1634,10 +2346,8 @@ function saveNotes() {
 // TITLE PAGE
 // ============================================================
 function showTitlePage() {
-  const tp = document.getElementById('title-page');
-  tp.classList.toggle('visible');
+  document.getElementById('title-page').classList.toggle('visible');
 }
-
 document.getElementById('tp-title').addEventListener('input', scheduleAutoSave);
 document.getElementById('tp-author').addEventListener('input', scheduleAutoSave);
 
@@ -1654,139 +2364,79 @@ function getScriptData() {
   }));
 }
 
-// --- PDF Export ---
 function exportPDF() {
   closeModal('modal-export');
   showToast('Generating PDF…');
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'in', format: 'letter', orientation: 'portrait' });
-
   const pageW = 8.5, pageH = 11;
   const marginTop = 1, marginBottom = 1, marginLeft = 1.5, marginRight = 1;
   const contentW = pageW - marginLeft - marginRight;
-  const lineH = 1/6; // 6 lines per inch (12pt courier)
+  const lineH = 1/6;
   const linesPerPage = Math.floor((pageH - marginTop - marginBottom) / lineH);
-
   doc.setFont('Courier', 'normal');
   doc.setFontSize(12);
-
-  let currentPage = 1;
-  let currentLine = 0;
+  let currentPage = 1, currentLine = 0;
 
   function checkPage() {
     if (currentLine >= linesPerPage - 2) {
-      doc.addPage();
-      currentPage++;
-      currentLine = 0;
-      // Page number
+      doc.addPage(); currentPage++; currentLine = 0;
       doc.setFontSize(12);
       doc.text(`${currentPage}.`, pageW - marginRight, marginTop - lineH * 2, { align: 'right' });
     }
   }
-
   function addLine(text, indent, bold) {
     checkPage();
     const x = marginLeft + indent;
     const y = marginTop + currentLine * lineH;
-    if (bold) doc.setFont('Courier', 'bold');
-    else doc.setFont('Courier', 'normal');
+    if (bold) doc.setFont('Courier', 'bold'); else doc.setFont('Courier', 'normal');
     doc.setFontSize(12);
     if (text) doc.text(text, x, y);
     currentLine++;
   }
-
   function wrapText(text, maxChars) {
     if (!text) return [''];
     const words = text.split(' ');
-    const lines = [];
-    let current = '';
+    const lines = []; let current = '';
     words.forEach(word => {
       if ((current + ' ' + word).trim().length > maxChars) {
-        if (current) lines.push(current.trim());
-        current = word;
-      } else {
-        current = (current + ' ' + word).trim();
-      }
+        if (current) lines.push(current.trim()); current = word;
+      } else { current = (current + ' ' + word).trim(); }
     });
     if (current) lines.push(current);
     return lines.length ? lines : [''];
   }
 
-  // Title Page
   const titlePageEl = document.getElementById('title-page');
-  const showTitle = titlePageEl.classList.contains('visible');
-  if (showTitle) {
+  if (titlePageEl.classList.contains('visible')) {
     const titleText = document.getElementById('tp-title').textContent;
     const authorText = document.getElementById('tp-author').textContent;
-    // Center vertically around page midpoint
     const midLine = Math.floor(linesPerPage / 2);
     currentLine = midLine - 3;
-    addLine('', 0);
-    // Center title
     const titleX = marginLeft + contentW / 2;
     const y = marginTop + currentLine * lineH;
-    doc.setFont('Courier', 'bold');
-    doc.setFontSize(14);
+    doc.setFont('Courier', 'bold'); doc.setFontSize(14);
     doc.text(titleText.toUpperCase(), titleX, y, { align: 'center' });
-    currentLine += 2;
-    doc.setFont('Courier', 'normal');
-    doc.setFontSize(12);
+    currentLine += 2; doc.setFont('Courier', 'normal'); doc.setFontSize(12);
     doc.text('Written by', titleX, marginTop + currentLine * lineH, { align: 'center' });
     currentLine++;
     doc.text(authorText, titleX, marginTop + currentLine * lineH, { align: 'center' });
-    doc.addPage();
-    currentPage++;
-    currentLine = 0;
-    // First page number
+    doc.addPage(); currentPage++; currentLine = 0;
     doc.text('1.', pageW - marginRight, marginTop - lineH * 2, { align: 'right' });
   }
 
-  const data = getScriptData();
-
-  data.forEach(el => {
+  getScriptData().forEach(el => {
     if (!el.text) return;
-    const text = el.text;
-
     switch (el.type) {
-      case 'scene-heading': {
-        if (currentLine > 0) currentLine += 1; // blank line before
-        checkPage();
-        addLine(text.toUpperCase(), 0, true);
-        currentLine += 0; // no extra after
-        break;
-      }
-      case 'action': {
-        currentLine += 1;
-        const lines = wrapText(text, 60);
-        lines.forEach(l => addLine(l, 0, false));
-        break;
-      }
-      case 'character': {
-        currentLine += 1;
-        addLine(text.toUpperCase(), 2.2, false);
-        break;
-      }
-      case 'dialogue': {
-        const lines = wrapText(text, 35);
-        lines.forEach(l => addLine(l, 1.0, false));
-        break;
-      }
-      case 'parenthetical': {
-        const pText = text.startsWith('(') ? text : `(${text})`;
-        addLine(pText, 1.5, false);
-        break;
-      }
-      case 'transition': {
-        currentLine += 1;
-        checkPage();
-        const x = marginLeft + contentW;
-        const y = marginTop + currentLine * lineH;
+      case 'scene-heading': if (currentLine > 0) currentLine += 1; checkPage(); addLine(el.text.toUpperCase(), 0, true); break;
+      case 'action':        currentLine += 1; wrapText(el.text, 60).forEach(l => addLine(l, 0, false)); break;
+      case 'character':     currentLine += 1; addLine(el.text.toUpperCase(), 2.2, false); break;
+      case 'dialogue':      wrapText(el.text, 35).forEach(l => addLine(l, 1.0, false)); break;
+      case 'parenthetical': addLine(el.text.startsWith('(') ? el.text : `(${el.text})`, 1.5, false); break;
+      case 'transition':    currentLine += 1; checkPage();
         doc.setFont('Courier', 'normal');
-        doc.text(text.toUpperCase(), x, y, { align: 'right' });
-        currentLine++;
-        break;
-      }
+        doc.text(el.text.toUpperCase(), marginLeft + contentW, marginTop + currentLine * lineH, { align: 'right' });
+        currentLine++; break;
     }
   });
 
@@ -1795,97 +2445,32 @@ function exportPDF() {
   showToast('PDF exported!', 'success');
 }
 
-// --- DOCX Export ---
 async function exportDOCX() {
   closeModal('modal-export');
   showToast('Generating DOCX…');
-
   try {
-    const { Document, Packer, Paragraph, TextRun, AlignmentType, PageNumber,
-            Header, Footer, Tab, TabStopType, TabStopPosition } = docx;
-
+    const { Document, Packer, Paragraph, TextRun, AlignmentType, PageNumber, Header, Footer } = docx;
     const project = state.projects[state.currentProjectId];
     const data = getScriptData();
-
-    // DXA helpers (1 inch = 1440 DXA)
     const IN = 1440;
 
-    function makeSceneHeading(text) {
-      return new Paragraph({
-        spacing: { before: 240, after: 0 },
-        children: [new TextRun({ text: text.toUpperCase(), font: 'Courier New', size: 24, bold: true })]
-      });
-    }
-
-    function makeAction(text) {
-      const lines = text.match(/.{1,60}(\s|$)/g) || [text];
-      return lines.map(line => new Paragraph({
-        spacing: { before: 0, after: 0 },
-        children: [new TextRun({ text: line.trimEnd(), font: 'Courier New', size: 24 })]
-      }));
-    }
-
-    function makeCharacter(text) {
-      return new Paragraph({
-        spacing: { before: 240, after: 0 },
-        indent: { left: Math.round(2.2 * IN) },
-        children: [new TextRun({ text: text.toUpperCase(), font: 'Courier New', size: 24 })]
-      });
-    }
-
-    function makeDialogue(text) {
-      const lines = text.match(/.{1,35}(\s|$)/g) || [text];
-      return lines.map(line => new Paragraph({
-        spacing: { before: 0, after: 0 },
-        indent: { left: IN, right: IN },
-        children: [new TextRun({ text: line.trimEnd(), font: 'Courier New', size: 24 })]
-      }));
-    }
-
-    function makeParenthetical(text) {
-      const t = text.startsWith('(') ? text : `(${text})`;
-      return new Paragraph({
-        spacing: { before: 0, after: 0 },
-        indent: { left: Math.round(1.5 * IN) },
-        children: [new TextRun({ text: t, font: 'Courier New', size: 24 })]
-      });
-    }
-
-    function makeTransition(text) {
-      return new Paragraph({
-        spacing: { before: 240, after: 0 },
-        alignment: AlignmentType.RIGHT,
-        children: [new TextRun({ text: text.toUpperCase(), font: 'Courier New', size: 24 })]
-      });
-    }
+    const makeSceneHeading = t => new Paragraph({ spacing: { before: 240, after: 0 }, children: [new TextRun({ text: t.toUpperCase(), font: 'Courier New', size: 24, bold: true })] });
+    const makeAction = t => (t.match(/.{1,60}(\s|$)/g) || [t]).map(l => new Paragraph({ spacing: { before: 0, after: 0 }, children: [new TextRun({ text: l.trimEnd(), font: 'Courier New', size: 24 })] }));
+    const makeCharacter = t => new Paragraph({ spacing: { before: 240, after: 0 }, indent: { left: Math.round(2.2 * IN) }, children: [new TextRun({ text: t.toUpperCase(), font: 'Courier New', size: 24 })] });
+    const makeDialogue = t => (t.match(/.{1,35}(\s|$)/g) || [t]).map(l => new Paragraph({ spacing: { before: 0, after: 0 }, indent: { left: IN, right: IN }, children: [new TextRun({ text: l.trimEnd(), font: 'Courier New', size: 24 })] }));
+    const makeParenthetical = t => { const txt = t.startsWith('(') ? t : `(${t})`; return new Paragraph({ spacing: { before: 0, after: 0 }, indent: { left: Math.round(1.5 * IN) }, children: [new TextRun({ text: txt, font: 'Courier New', size: 24 })] }); };
+    const makeTransition = t => new Paragraph({ spacing: { before: 240, after: 0 }, alignment: AlignmentType.RIGHT, children: [new TextRun({ text: t.toUpperCase(), font: 'Courier New', size: 24 })] });
 
     const children = [];
-
-    // Title page
-    const showTitle = document.getElementById('title-page').classList.contains('visible');
-    if (showTitle) {
-      const titleText = document.getElementById('tp-title').textContent;
-      const authorText = document.getElementById('tp-author').textContent;
-      // Add spacing paragraphs to push title down
+    if (document.getElementById('title-page').classList.contains('visible')) {
       for (let i = 0; i < 15; i++) children.push(new Paragraph({ children: [] }));
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: titleText.toUpperCase(), font: 'Courier New', size: 28, bold: true })]
-      }));
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: document.getElementById('tp-title').textContent.toUpperCase(), font: 'Courier New', size: 28, bold: true })] }));
       children.push(new Paragraph({ children: [] }));
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'Written by', font: 'Courier New', size: 24 })]
-      }));
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: authorText, font: 'Courier New', size: 24 })]
-      }));
-      // Page break
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Written by', font: 'Courier New', size: 24 })] }));
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: document.getElementById('tp-author').textContent, font: 'Courier New', size: 24 })] }));
       children.push(new Paragraph({ pageBreakBefore: true, children: [] }));
     }
 
-    // Script content
     data.forEach(el => {
       if (!el.text) return;
       switch (el.type) {
@@ -1899,56 +2484,29 @@ async function exportDOCX() {
     });
 
     const doc2 = new Document({
-      sections: [{
-        properties: {
-          page: {
-            size: { width: 12240, height: 15840 },
-            margin: { top: IN, right: IN, bottom: IN, left: Math.round(1.5 * IN) }
-          }
-        },
-        headers: {
-          default: new Header({ children: [] })
-        },
-        footers: {
-          default: new Footer({
-            children: [new Paragraph({
-              alignment: AlignmentType.RIGHT,
-              children: [new TextRun({ font: 'Courier New', size: 24, children: [PageNumber.CURRENT, '.'] })]
-            })]
-          })
-        },
-        children
-      }]
+      sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: IN, right: IN, bottom: IN, left: Math.round(1.5 * IN) } } },
+        headers: { default: new Header({ children: [] }) },
+        footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ font: 'Courier New', size: 24, children: [PageNumber.CURRENT, '.'] })] })] }) },
+        children }]
     });
 
     const buffer = await Packer.toBlob(doc2);
     const url = URL.createObjectURL(buffer);
-    const a = document.createElement('a');
-    a.href = url;
+    const a = document.createElement('a'); a.href = url;
     a.download = `${(project?.title || 'Screenplay').replace(/[^a-z0-9]/gi, '_')}.docx`;
-    a.click();
-    URL.revokeObjectURL(url);
+    a.click(); URL.revokeObjectURL(url);
     showToast('DOCX exported!', 'success');
-  } catch (err) {
-    console.error(err);
-    showToast('Export failed: ' + err.message, 'error');
-  }
+  } catch (err) { console.error(err); showToast('Export failed: ' + err.message, 'error'); }
 }
 
-// --- Fountain Export ---
 function exportFountain() {
   closeModal('modal-export');
   const data = getScriptData();
   const project = state.projects[state.currentProjectId];
-  const showTitle = document.getElementById('title-page').classList.contains('visible');
-
   let out = '';
-
-  if (showTitle) {
-    out += `Title: ${document.getElementById('tp-title').textContent}\n`;
-    out += `Author: ${document.getElementById('tp-author').textContent}\n\n`;
+  if (document.getElementById('title-page').classList.contains('visible')) {
+    out += `Title: ${document.getElementById('tp-title').textContent}\nAuthor: ${document.getElementById('tp-author').textContent}\n\n`;
   }
-
   data.forEach(el => {
     if (!el.text) return;
     switch (el.type) {
@@ -1960,14 +2518,11 @@ function exportFountain() {
       case 'transition':     out += `\n> ${el.text.toUpperCase()}\n\n`; break;
     }
   });
-
   const blob = new Blob([out], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  const a = document.createElement('a'); a.href = url;
   a.download = `${(project?.title || 'Screenplay').replace(/[^a-z0-9]/gi, '_')}.fountain`;
-  a.click();
-  URL.revokeObjectURL(url);
+  a.click(); URL.revokeObjectURL(url);
   showToast('Fountain exported!', 'success');
 }
 
@@ -1975,20 +2530,13 @@ function exportFountain() {
 // THEME & UI
 // ============================================================
 function toggleTheme() {
-  const current = document.body.dataset.theme;
-  const next = current === 'dark' ? 'light' : 'dark';
+  const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   state.settings.theme = next;
   saveState();
 }
-
-function applyTheme(theme) {
-  document.body.dataset.theme = theme;
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('collapsed');
-}
+function applyTheme(theme) { document.body.dataset.theme = theme; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
 function switchSidebarTab(name) {
   document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
@@ -2002,7 +2550,6 @@ function setupSidebarResize() {
   const handle = document.getElementById('sidebar-resize');
   const sidebar = document.getElementById('sidebar');
   let dragging = false, startX, startW;
-
   handle.addEventListener('mousedown', e => {
     dragging = true; startX = e.clientX; startW = sidebar.offsetWidth;
     document.body.style.cursor = 'col-resize';
@@ -2026,9 +2573,11 @@ function setupSidebarResize() {
 // ============================================================
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', e => {
+    if (e.key === 'F11') { e.preventDefault(); toggleFocusMode(); return; }
+
     if (e.ctrlKey || e.metaKey) {
       switch (e.key.toLowerCase()) {
-        case 's': e.preventDefault(); saveCurrentProject(); showToast('Saved', 'success'); break;
+        case 's': e.preventDefault(); saveCurrentProject(); saveVersion(false); showToast('Saved', 'success'); break;
         case 'f': e.preventDefault(); toggleSearch(); break;
         case '1': e.preventDefault(); setElementType('scene-heading'); break;
         case '2': e.preventDefault(); setElementType('action'); break;
@@ -2037,10 +2586,16 @@ function setupKeyboardShortcuts() {
         case '5': e.preventDefault(); setElementType('parenthetical'); break;
         case '6': e.preventDefault(); setElementType('transition'); break;
       }
+      if (e.shiftKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        saveVersion(true);
+        switchSidebarTab('history');
+      }
     }
     if (e.key === 'Escape') {
       closeAllDropdowns();
       document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible'));
+      if (focusModeActive) toggleFocusMode();
     }
   });
 }
@@ -2061,11 +2616,9 @@ function toggleDropdown(id) {
   closeAllDropdowns();
   if (!wasVisible) dd.classList.add('visible');
 }
-
 function closeAllDropdowns() {
   document.querySelectorAll('.dropdown-menu.visible').forEach(d => d.classList.remove('visible'));
 }
-
 document.addEventListener('click', e => {
   if (!e.target.closest('.dropdown-wrapper')) closeAllDropdowns();
 });
@@ -2098,8 +2651,6 @@ function loadState() {
     const settings = localStorage.getItem(SETTINGS_KEY);
     if (projects) state.projects = JSON.parse(projects);
     if (settings) state.settings = { ...state.settings, ...JSON.parse(settings) };
-
-    // Find last project
     const sorted = Object.values(state.projects).sort((a, b) => b.modified - a.modified);
     if (sorted.length > 0) state.currentProjectId = sorted[0].id;
   } catch(e) { console.warn('Load failed', e); }
@@ -2108,24 +2659,23 @@ function loadState() {
 // ============================================================
 // UTILS
 // ============================================================
-function generateId() { return 'p_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36); }
-function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function moveCursorToEnd(el) {
-  const range = document.createRange();
-  const sel = window.getSelection();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
+  try {
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch(e) {}
 }
 
 // ============================================================
 // BOOT
 // ============================================================
 window.addEventListener('DOMContentLoaded', init);
-window.addEventListener("beforeunload", () => {
-  saveCurrentProject();
-});
+window.addEventListener('beforeunload', () => { saveCurrentProject(); });
 </script>
 </body>
 </html>
